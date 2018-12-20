@@ -15,6 +15,8 @@ parser.add_argument("-l","--referenceligand", help="Specify the ligand within th
                 required=True, type=str, default="NON")
 parser.add_argument("-m","--mindist", help="Specify minimum distance from ligand", 
                 required=False, type=numpy.float64, default=4.0)
+parser.add_argument("-o","--outputfile", help="Specify PDB output file", 
+                required=False, type=str, default="extract.pdb")
 
 
 args = parser.parse_args()
@@ -31,9 +33,10 @@ ligandname = args.referenceligand
 
 mol = pybel.readfile("pdb", args.inputfile).next()
 coords = []
+obatoms = []
 for atom in mol:
     coords.append(atom.coords)
-
+    obatoms.append(atom.OBAtom)
 
 obmol = mol.OBMol 
 
@@ -49,13 +52,37 @@ if numofresidue == 1:
     print "Found ", obres.GetName(), " ", obres.GetIdx(), \
             " chain: ", obres.GetChain()
 
+    near_residues = {}
     for obatom in ob.OBResidueAtomIter(obres):
         atomcoord = numpy.array([obatom.x(), obatom.y(), obatom.z()])
         dist = numpy.sqrt(numpy.sum((npcoords - atomcoord)**2, axis=1))
         print "    %10.3f %10.3f %10.3f %s"%(obatom.x(), \
                 obatom.y(), obatom.z(),  obres.GetAtomID(obatom))
 
-        print "    near atom ",numpy.flatnonzero(dist < args.mindist)
+        for index in numpy.flatnonzero(dist < args.mindist):
+            res = obatoms[index].GetResidue()
+            uniqname = res.GetName()+ "_" + str(res.GetIdx()) + "_" + \
+                    res.GetChain()
+            near_residues[uniqname] = res
+
+    print "Now copying original molecule and removing atoms"
+    extract_pdb = ob.OBMol(obmol)
+    atomtoremove = []
+    for res in ob.OBResidueIter(extract_pdb):
+        uniqname = res.GetName()+ "_" + str(res.GetIdx()) + "_" + \
+                    res.GetChain()
+        if not ( uniqname in near_residues):
+            for obatom in ob.OBResidueAtomIter(res):
+                atomtoremove.append(obatom)
+
+    for atomtorm in atomtoremove:
+        extract_pdb.DeleteAtom(atomtorm)
+
+    extract_pdb.AddHydrogens()
+        
+    output = pybel.Outputfile("pdb", args.outputfile, overwrite=True)
+    output.write(pybel.Molecule(extract_pdb))
+    output.close()
 
 else:
     print "There are ", numofresidue, " with the same name "
