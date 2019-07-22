@@ -1,2 +1,29 @@
-Nuovo file per protein prep
+=================================================================
+== Notes about the main features of a protein preparation tool ==
+=================================================================
 
+Starting from PDB files, the protein preparation tool should:
+
+1) Identify and eventually fill:
+   a. the missing residues; *
+   b. the missing side-chains.
+
+2) Identify selenomethionine residues and replace them with methionine.
+
+3) Delete all water molecules listed in PDB files or mantain only molecules within a certain distance from protein surface.
+
+4) Add H atoms to residues/water molecules and define the protein termini (e.g. adding caps).
+
+5) Optimization of H atoms.
+
+6) Define the protontion state of side chains at pH=7 +/- x.
+
+7) Final geometry optimization.
+
+
+* This feature can be even discarded considering that, in order to have a nice starting structure when some residues miss,
+   it is better to perfom an omology study with appropriate computational tecniques.
+
+
+Additional notes:
+Metal ions were not considered in the list above but some features to treat them should be considered.
