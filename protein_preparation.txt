@@ -27,3 +27,9 @@ Starting from PDB files, the protein preparation tool should:
 
 Additional notes:
 Metal ions were not considered in the list above but some features to treat them should be considered.
+
+some references:
+
+https://github.com/mc-robinson/chain_joiner
+https://biopython.org/wiki/Category%3ACookbook
+http://openbabel.org/wiki/Main_Page and so pybel
